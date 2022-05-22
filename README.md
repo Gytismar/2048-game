@@ -39,5 +39,6 @@ The game has a special ability, that removes all 2 and 4 tiles.
 * **R** return to menu
 
 ## Known issues
+* The AI almost always loses if the grid is smaller than 5x5, but usually wins if the grid is 5x5 or larger
 * The AI sometimes freezes at the start of the game
 * The AI sometimes appears to be able to move, but dosen't, because it would lose
