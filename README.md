@@ -1,6 +1,6 @@
 # 2048-game
 ## About
-Recreation of the popular 2048 game, written in c++ using the SFML library for graphics.
+Recreation of the popular 2048 game, written in C++ and using the SFML library for graphics.
 
 You can play vs an AI, another player or just watch two AI compete.
 
