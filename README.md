@@ -27,7 +27,7 @@ The game has a special ability, that removes all 2 and 4 tiles.
 * **X** to use special ability (remove all 2 and 4 tiles if possible)
 * **R** return to menu
 
-#### Player2(left window)
+#### Player2(right window)
 * **↑** to move tiles up
 * **↓** to move tiles down
 * **←** to move tiles left
