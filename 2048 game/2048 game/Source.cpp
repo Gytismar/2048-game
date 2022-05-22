@@ -4,23 +4,24 @@
 #include <string>
 
 
-constexpr int IMG_SIZE = 64;
-constexpr int ILGIS = 8;
-constexpr int PLOTIS = 8;
-int OpacityDim = 120;
+constexpr int IMG_SIZE = 64; // dimensions of used .png (64x64)
+constexpr int LENGTH = 5;    // grid length
+constexpr int WIDTH = 5;     // grid width
+int opacitydim = 120;        // opacity which will be set for tiles if a player loses
+int specialamount = 1;       //how many special abilites are given to the player each game
 
-void Divider(sf::RenderWindow &window, bool Lost) {
-    sf::Texture white;
-    white.loadFromFile("images/Black.png");
-    sf::Sprite swhite;
-    swhite.setTexture(white);
-    if (Lost) {
-        sf::Color cwhite(swhite.getColor().r, swhite.getColor().g, swhite.getColor().b, 120); swhite.setColor(cwhite);
+void Divider(sf::RenderWindow &window, bool lost) { // creates a dividing line between the two players
+    sf::Texture divider;
+    divider.loadFromFile("images/Black.png");
+    sf::Sprite sdivider;
+    sdivider.setTexture(divider);
+    if (lost) {
+        sf::Color cdivider(sdivider.getColor().r, sdivider.getColor().g, sdivider.getColor().b, 120); sdivider.setColor(cdivider);
     }
 
-    for (int b = 0; b < PLOTIS; b++) {
-        swhite.setPosition(ILGIS * IMG_SIZE, b * IMG_SIZE);
-        window.draw(swhite);
+    for (int b = 0; b < WIDTH; b++) {
+        sdivider.setPosition(LENGTH * IMG_SIZE, b * IMG_SIZE);
+        window.draw(sdivider);
     }
 }
 void Texture_Render(sf::Texture& i0, sf::Texture& i2, sf::Texture& i4, sf::Texture& i8, sf::Texture& i16, sf::Texture& i32, sf::Texture& i64, sf::Texture& i128, sf::Texture& i256, sf::Texture& i512, sf::Texture& i1024, sf::Texture& i2048, sf::Sprite &s0, sf::Sprite &s2, sf::Sprite &s4, sf::Sprite &s8, sf::Sprite &s16, sf::Sprite &s32,sf::Sprite &s64, sf::Sprite &s128, sf::Sprite &s256, sf::Sprite &s512, sf::Sprite &s1024,sf::Sprite &s2048) {
@@ -49,8 +50,6 @@ void Texture_Render(sf::Texture& i0, sf::Texture& i2, sf::Texture& i4, sf::Textu
     s512.setTexture(i512);
     s1024.setTexture(i1024);
     s2048.setTexture(i2048);
-    sf::Color a(s2.getColor().r, s2.getColor().g, s2.getColor().b, 255);
-    //s16.setColor(a);
 }
 void Texture_Dimmer(int Opacity,sf::Sprite& s0, sf::Sprite& s2, sf::Sprite& s4, sf::Sprite& s8, sf::Sprite& s16, sf::Sprite& s32, sf::Sprite& s64, sf::Sprite& s128, sf::Sprite& s256, sf::Sprite& s512, sf::Sprite& s1024, sf::Sprite& s2048) {
 
@@ -68,25 +67,25 @@ void Texture_Dimmer(int Opacity,sf::Sprite& s0, sf::Sprite& s2, sf::Sprite& s4, 
     sf::Color c2048(s2048.getColor().r, s2048.getColor().g, s2048.getColor().b, Opacity); s2048.setColor(c2048);
 }
 
-class Lenta {
+class Player { // main player class
 protected:
-    int Grid[ILGIS][PLOTIS] = {0};
-    int push = 0;
+    int grid[LENGTH][WIDTH] = {0};  // each tile's value
+    int push;                       // how much the tiles that are drawn will have to be pushed to not draw over the first player
     sf::Texture i0, i2, i4, i8, i16, i32, i64, i128, i256, i512, i1024, i2048;
     sf::Sprite s0, s2, s4, s8, s16, s32, s64, s128, s256, s512, s1024, s2048;
-    int SpecialCount = 1;
-    bool WonGame = 0;
-    bool LostGame = 0;
+    int specialcount;               // how many times the special ability can be used (to delete all tiles with 2 and 4)
+    bool wongame;                   // flag for if the game is won (a tile of 2048 exists
+    bool lostgame;                  // flag if the game is lost (no special ability left and can't move to any direction)
 public: 
-    Lenta() {};
-    ~Lenta(){};
-    void RenderPng() { // uzdeda ant sprites .png
+    Player() { push = 0; specialcount = specialamount; wongame = 0; lostgame = 0; };
+    ~Player(){};
+    void RenderPng() { // puts the .png over the sprites
         Texture_Render(i0, i2, i4, i8, i16, i32, i64, i128, i256, i512, i1024, i2048, s0, s2, s4, s8, s16, s32, s64, s128, s256, s512, s1024, s2048); //perkelia .png failus i sprites
     }
-    void DimPng(int Opacity) { // sumazina ryskuma visu sprites
+    void DimPng(int Opacity) { // dims the tiles
         Texture_Dimmer(Opacity,s0, s2, s4, s8, s16, s32, s64, s128, s256, s512, s1024, s2048);
     }
-    void NewTile() { // sukuria nauja tile (2 arba 4)
+    void NewTile() { // creates a new tile (2 or 4)
         int temp;
         srand(time(NULL));
         if (rand() % 10 < 5)
@@ -95,235 +94,236 @@ public:
             temp = 4;
 
         int x, y;
-        bool laisva = false; // ar yra bent vienas laisvas langelis
-        for (int i = 0; i < ILGIS; i++) {
-            for (int b = 0; b < PLOTIS; b++) {
-                if (Grid[i][b] == 0) {
-                    i = ILGIS;
-                    b = PLOTIS;
-                    laisva = true;
+        bool anyfreetiles = false; // flag for checking if atleast one tile is empty
+        for (int i = 0; i < LENGTH; i++) {
+            for (int b = 0; b < WIDTH; b++) {
+                if (grid[i][b] == 0) {
+                    i = LENGTH;
+                    b = WIDTH;
+                    anyfreetiles = true;
                 }
             }
         }
 
-        while (true && laisva) {
-            x = rand() % ILGIS;
-            y = rand() % PLOTIS;
-            if (Grid[x][y] == 0) {
-                Grid[x][y] = temp;
+        while (true && anyfreetiles) {
+            x = rand() % LENGTH;
+            y = rand() % WIDTH;
+            if (grid[x][y] == 0) {
+                grid[x][y] = temp;
                 break;
             }
         }
     }
-    void PushInput(int x) { // gauna, kiek reikia pastumti visus piesiamus objektus (kad nesikirsti su kitais zaidejais)
+    void PushInput(int x) { // input for how much the tiles will have to be pushed to the right when they are drawn
         push = x;
     }
-    void Shift(int x) { // pajudina visus langelius i pasirinkta krypti
-        if (!LostGame) {
-            bool changes = false;
-            int tempGrid[ILGIS][PLOTIS];
-            for (int i = 0; i < ILGIS; i++) {
-                for (int b = 0; b < PLOTIS; b++) {
-                    tempGrid[i][b] = Grid[i][b];
+    void Shift(int x) { // moves the tiles in the chosen direction
+        if (!lostgame) {
+            bool changes = false; // flag for checking if anything has changed
+            int tempgrid[LENGTH][WIDTH]; // for storing initial tile values (before shifting)
+            for (int i = 0; i < LENGTH; i++) {
+                for (int b = 0; b < WIDTH; b++) {
+                    tempgrid[i][b] = grid[i][b];
                 }
             }
-            if (x == 0) {
-                for (int i = 0; i < ILGIS; i++) {
-                    for (int b = 1; b < PLOTIS; b++) {
+            if (x == 0) { // up
+                for (int i = 0; i < LENGTH; i++) {
+                    for (int b = 1; b < WIDTH; b++) {
                         if (b != 0) {
-                            if (Grid[i][b - 1] == Grid[i][b]) {
-                                Grid[i][b - 1] = Grid[i][b - 1] * 2;
-                                Grid[i][b] = 0;
+                            if (grid[i][b - 1] == grid[i][b]) {
+                                grid[i][b - 1] = grid[i][b - 1] * 2;
+                                grid[i][b] = 0;
                             }
-                            else if (Grid[i][b - 1] == 0 && Grid[i][b] != 0) {
-                                Grid[i][b - 1] = Grid[i][b];
-                                Grid[i][b] = 0;
+                            else if (grid[i][b - 1] == 0 && grid[i][b] != 0) {
+                                grid[i][b - 1] = grid[i][b];
+                                grid[i][b] = 0;
                                 b -= 2;
                             }
                         }
                     }
                 }
             }
-            else if (x == 1) { // Down
-                for (int i = 0; i < ILGIS; i++) {
-                    for (int b = PLOTIS - 2; b >= 0; b--) {
-                        if (b != PLOTIS - 1) {
-                            if (Grid[i][b + 1] == Grid[i][b]) {
-                                Grid[i][b + 1] = Grid[i][b + 1] * 2;
-                                Grid[i][b] = 0;
+            else if (x == 1) { // down
+                for (int i = 0; i < LENGTH; i++) {
+                    for (int b = WIDTH - 2; b >= 0; b--) {
+                        if (b != WIDTH - 1) {
+                            if (grid[i][b + 1] == grid[i][b]) {
+                                grid[i][b + 1] = grid[i][b + 1] * 2;
+                                grid[i][b] = 0;
                             }
-                            else if (Grid[i][b + 1] == 0 && Grid[i][b] != 0) {
-                                Grid[i][b + 1] = Grid[i][b];
-                                Grid[i][b] = 0;
+                            else if (grid[i][b + 1] == 0 && grid[i][b] != 0) {
+                                grid[i][b + 1] = grid[i][b];
+                                grid[i][b] = 0;
                                 b += 2;
                             }
                         }
                     }
                 }
             }
-            else if (x == 2) { // Left
-                for (int b = 0; b < PLOTIS; b++) {
-                    for (int i = 0; i < ILGIS; i++) {
+            else if (x == 2) { // left
+                for (int b = 0; b < WIDTH; b++) {
+                    for (int i = 0; i < LENGTH; i++) {
                         if (i != 0) {
-                            if (Grid[i - 1][b] == Grid[i][b]) {
-                                Grid[i - 1][b] = Grid[i - 1][b] * 2;
-                                Grid[i][b] = 0;
+                            if (grid[i - 1][b] == grid[i][b]) {
+                                grid[i - 1][b] = grid[i - 1][b] * 2;
+                                grid[i][b] = 0;
                             }
-                            else if (Grid[i - 1][b] == 0 && Grid[i][b] != 0) {
-                                Grid[i - 1][b] = Grid[i][b];
-                                Grid[i][b] = 0;
+                            else if (grid[i - 1][b] == 0 && grid[i][b] != 0) {
+                                grid[i - 1][b] = grid[i][b];
+                                grid[i][b] = 0;
                                 i -= 2;
                             }
                         }
                     }
                 }
             }
-            else if (x == 3) {
-                for (int b = 0; b < PLOTIS; b++) {
-                    for (int i = ILGIS - 1; i >= 0; i--) {
-                        if (i != ILGIS - 1) {
-                            if (Grid[i + 1][b] == Grid[i][b]) {
-                                Grid[i + 1][b] = Grid[i + 1][b] * 2;
-                                Grid[i][b] = 0;
+            else if (x == 3) { // right
+                for (int b = 0; b < WIDTH; b++) {
+                    for (int i = LENGTH - 1; i >= 0; i--) {
+                        if (i != LENGTH - 1) {
+                            if (grid[i + 1][b] == grid[i][b]) {
+                                grid[i + 1][b] = grid[i + 1][b] * 2;
+                                grid[i][b] = 0;
                             }
-                            else if (Grid[i + 1][b] == 0 && Grid[i][b] != 0) {
-                                Grid[i + 1][b] = Grid[i][b];
-                                Grid[i][b] = 0;
+                            else if (grid[i + 1][b] == 0 && grid[i][b] != 0) {
+                                grid[i + 1][b] = grid[i][b];
+                                grid[i][b] = 0;
                                 i += 2;
                             }
                         }
                     }
                 }
             }
-            for (int i = 0; i < ILGIS; i++) {
-                for (int b = 0; b < PLOTIS; b++) {
-                    if (tempGrid[i][b] != Grid[i][b])
+
+            for (int i = 0; i < LENGTH; i++) { // checking if anything changed
+                for (int b = 0; b < WIDTH; b++) {
+                    if (tempgrid[i][b] != grid[i][b])
                         changes = true;
                 }
             }
-            if (changes) {
+            if (changes) { // if any changes happened, a new tile is created
                 NewTile();
             }
         }
         
 
     }
-    void Special() { // special ability, panaikina visus 2 ir 4 langelius
+    void Special() { // special ability, removes all tiles with 2 and 4
         
-        if (SpecialCount > 0) {
-            bool galima = false;
-            for (int i = 0; i < ILGIS && !galima; i++) {
-                for (int b = 0; b < PLOTIS && !galima; b++) {
-                    if (Grid[i][b] != 2 && Grid[i][b] != 4)
-                        galima = true;
+        if (specialcount > 0) {
+            bool allowed = false;
+            for (int i = 0; i < LENGTH && !allowed; i++) { // checks if there are other tiles besides 2 and 4
+                for (int b = 0; b < WIDTH && !allowed; b++) {
+                    if (grid[i][b] != 2 && grid[i][b] != 4 && grid[i][b] != 0)
+                        allowed = true;
                 }
             }
-            if (galima) {
-                for (int i = 0; i < ILGIS; i++) {
-                    for (int b = 0; b < PLOTIS; b++) {
-                        if (Grid[i][b] == 2 || Grid[i][b] == 4)
-                            Grid[i][b] = 0;
+            if (allowed) {
+                for (int i = 0; i < LENGTH; i++) {
+                    for (int b = 0; b < WIDTH; b++) {
+                        if (grid[i][b] == 2 || grid[i][b] == 4)
+                            grid[i][b] = 0;
                     }
                 }
-                SpecialCount--;
+                specialcount--;
             }
             
         }
         
     }
-    int Score() { // apskaiciuoja visu langeliu suma
-        int suma = 0;
-        for (int i = 0; i < ILGIS; i++) {
-            for (int b = 0; b < PLOTIS; b++) {
-                suma += Grid[i][b];
+    int Score() { // gets the sum of all tiles
+        int score = 0;
+        for (int i = 0; i < LENGTH; i++) {
+            for (int b = 0; b < WIDTH; b++) {
+                score += grid[i][b];
             }
         }
-        return suma;
+        return score;
     }
-    void Win() { // Patikrina, ar laimeta (ar yra 2048 langelis)
+    void Win() { // checks if the player has won (if a tile with the value of 2048 exists)
         bool b2048 = false;
-        for (int i = 0; i < ILGIS; i++) {
-            for (int b = 0; b < PLOTIS; b++) {
-                if (Grid[i][b] == 2048) {
+        for (int i = 0; i < LENGTH; i++) {
+            for (int b = 0; b < WIDTH; b++) {
+                if (grid[i][b] == 2048) {
                     b2048 = true;
-                    i = ILGIS;
-                    b = PLOTIS;
+                    i = LENGTH;
+                    b = WIDTH;
                 }
             }
         }
         if (b2048)
-            WonGame = true;
+            wongame = true;
     }
-    bool Lose() { // Patikrina, ar pralosta
-        bool laisva = false;
-        for (int i = 0; i < ILGIS && SpecialCount == 0; i++) {
-            for (int b = 0; b < PLOTIS && SpecialCount == 0; b++) {
-                if (Grid[i][b] == 0) {
-                    laisva = true;
-                    i = ILGIS;
-                    b = PLOTIS;
+    bool Lose() { // checks if the game is lost (no special ability left and can't move to any direction)
+        bool anyfreetiles = false;
+        for (int i = 0; i < LENGTH && specialcount == 0; i++) { // checks if all the tiles are taken
+            for (int b = 0; b < WIDTH; b++) {
+                if (grid[i][b] == 0) {
+                    anyfreetiles = true;
+                    i = LENGTH;
+                    b = WIDTH;
                 }
             }
         }
-        if (!laisva && SpecialCount == 0) {
-            int TempGrid[ILGIS][PLOTIS];
-            for (int i = 0; i < ILGIS; i++) {
-                for (int b = 0; b < PLOTIS; b++) {
-                    TempGrid[i][b] = Grid[i][b];
+        if (!anyfreetiles && specialcount == 0) { // if there are no free tiles and the player dosen't have any more special abilities
+            int tempgrid[LENGTH][WIDTH];
+            for (int i = 0; i < LENGTH; i++) {
+                for (int b = 0; b < WIDTH; b++) {
+                    tempgrid[i][b] = grid[i][b];
                 }
             }
-            bool pasikeite = false;
+            bool changed = false; // checks if it's possible to move in any directions
             Shift(0);
-            for (int i = 0; i < ILGIS && !pasikeite; i++) {
-                for (int b = 0; b < PLOTIS && !pasikeite; b++) {
-                    if (Grid[i][b] != TempGrid[i][b]) {
-                        pasikeite = true;
-                        i = ILGIS;
-                        b = PLOTIS;
+            for (int i = 0; i < LENGTH && !changed; i++) {
+                for (int b = 0; b < WIDTH && !changed; b++) {
+                    if (grid[i][b] != tempgrid[i][b]) {
+                        changed = true;
+                        i = LENGTH;
+                        b = WIDTH;
                     }
                 }
             }
             Shift(1);
-            for (int i = 0; i < ILGIS && !pasikeite; i++) {
-                for (int b = 0; b < PLOTIS && !pasikeite; b++) {
-                    if (Grid[i][b] != TempGrid[i][b]) {
-                        pasikeite = true;
-                        i = ILGIS;
-                        b = PLOTIS;
+            for (int i = 0; i < LENGTH && !changed; i++) {
+                for (int b = 0; b < WIDTH && !changed; b++) {
+                    if (grid[i][b] != tempgrid[i][b]) {
+                        changed = true;
+                        i = LENGTH;
+                        b = WIDTH;
                     }
                 }
             }
             Shift(2);
-            for (int i = 0; i < ILGIS && !pasikeite; i++) {
-                for (int b = 0; b < PLOTIS && !pasikeite; b++) {
-                    if (Grid[i][b] != TempGrid[i][b]) {
-                        pasikeite = true;
-                        i = ILGIS;
-                        b = PLOTIS;
+            for (int i = 0; i < LENGTH && !changed; i++) {
+                for (int b = 0; b < WIDTH && !changed; b++) {
+                    if (grid[i][b] != tempgrid[i][b]) {
+                        changed = true;
+                        i = LENGTH;
+                        b = WIDTH;
                     }
                 }
             }
             Shift(3);
-            for (int i = 0; i < ILGIS && !pasikeite; i++) {
-                for (int b = 0; b < PLOTIS && !pasikeite; b++) {
-                    if (Grid[i][b] != TempGrid[i][b]) {
-                        pasikeite = true;
-                        i = ILGIS;
-                        b = PLOTIS;
+            for (int i = 0; i < LENGTH && !changed; i++) {
+                for (int b = 0; b < WIDTH && !changed; b++) {
+                    if (grid[i][b] != tempgrid[i][b]) {
+                        changed = true;
+                        i = LENGTH;
+                        b = WIDTH;
                     }
                 }
             }
 
-            if (pasikeite) {
-                for (int i = 0; i < ILGIS; i++) {
-                    for (int b = 0; b < PLOTIS; b++) {
-                        Grid[i][b] = TempGrid[i][b];
+            if (changed) { // if the tiles can change, the original tile values are returned
+                for (int i = 0; i < LENGTH; i++) {
+                    for (int b = 0; b < WIDTH; b++) {
+                        grid[i][b] = tempgrid[i][b];
                     }
                 }
             }
-            if (!pasikeite) {
-                LostGame = true;
-                DimPng(OpacityDim);
+            if (!changed) { // if nothing can change
+                lostgame = true;
+                DimPng(opacitydim);
                 return true;
             }
             else
@@ -332,20 +332,20 @@ public:
         else
             return false;
     }
-    void Reset() {
-        for (int i = 0; i < ILGIS; i++) {
-            for (int b = 0; b < PLOTIS; b++) {
-                Grid[i][b] = 0;
+    void Reset() { // resets the values for a new game
+        for (int i = 0; i < LENGTH; i++) {
+            for (int b = 0; b < WIDTH; b++) {
+                grid[i][b] = 0;
             }
         }
-        SpecialCount = 1;
-        WonGame = false;
-        LostGame = false;
+        specialcount = specialamount;
+        wongame = false;
+        lostgame = false;
     }
-    void Draw(sf::RenderWindow &window, sf::Font font, int fontsize) {
-        for (int i = 0; i < ILGIS; i++) {
-            for (int b = 0; b < PLOTIS; b++) {
-                switch (Grid[i][b]) {
+    void Draw(sf::RenderWindow &window, sf::Font font, int fontsize) { // draws the tiles and the information of the player
+        for (int i = 0; i < LENGTH; i++) {
+            for (int b = 0; b < WIDTH; b++) {
+                switch (grid[i][b]) {
                 case 0:
                     s0.setPosition((i * IMG_SIZE)+push, b * IMG_SIZE);
                     window.draw(s0);
@@ -398,145 +398,150 @@ public:
                 
             }
         }
-        std::string ScoreString;
-
-        ScoreString = "Score:";
-        ScoreString += std::to_string(Score());
-        ScoreString += "\nSpecial:";
-        ScoreString += std::to_string(SpecialCount);
-
-        if (WonGame)
-            ScoreString += "  WON!";
-        else if (LostGame)
-            ScoreString += "  Lost :[";
+       
+        std::string playerinformation;
+        playerinformation = "Score:";
+        playerinformation += std::to_string(Score());
+        playerinformation += "\nSpecial:";
+        playerinformation += std::to_string(specialcount);
+        // /\ Shows the current score and the amount of special abilites left
+        
+        if (wongame)
+            playerinformation += "  WON!";
+        else if (lostgame)
+            playerinformation += "  Lost :[";
+        // /\ checks if the player has either won or lost and add's the appropriate message
 
         int tempPush;
         if (push == 0)
             tempPush = 0;
         else
             tempPush = push - 12;
+        // /\ used for allinging the playerinformation text
 
-        sf::Text ScoreTekstas; ScoreTekstas.setString(ScoreString); ScoreTekstas.setFont(font); ScoreTekstas.setCharacterSize(fontsize-12); ScoreTekstas.setPosition(tempPush, PLOTIS * IMG_SIZE); ScoreTekstas.setFillColor(sf::Color::Red);
-        window.draw(ScoreTekstas);
+        sf::Text scoretext; scoretext.setString(playerinformation); scoretext.setFont(font); scoretext.setCharacterSize(fontsize-12); scoretext.setPosition(tempPush, WIDTH * IMG_SIZE); scoretext.setFillColor(sf::Color::Red);
+        window.draw(scoretext);
     }
 };
 
-class Player:public Lenta {
-};
-
-class AI :public Lenta {
+class AI :public Player {
 private:
-    int paskutinesEigos[100][4] = {0};
+    int lastmoves[100][4] = {0}; // used for storing the last 100 movesets that the AI tried to do. Used for checking if the AI is stuck
 public:
-    int LaisvuLangeliuKiekis(){
-        int kiekis = 0;
-        for (int i = 0; i < ILGIS; i++) {
-            for (int b = 0; b < PLOTIS; b++) {
-                if (Grid[i][b] != 0)
-                    kiekis++;
+    int OccupiedTiles(){ // counts how many tiles are taken
+        int count = 0;
+        for (int i = 0; i < LENGTH; i++) {
+            for (int b = 0; b < WIDTH; b++) {
+                if (grid[i][b] != 0)
+                    count++;
             }
         }
 
-        return kiekis;
+        return count;
     }
-    bool Lost() {
-        return LostGame;
+    bool ReturnLost() { // returns if the game is lost without checking if the game is lost (unlike Lose())
+        return lostgame;
     }
-    void Auto() {
-        if (!WonGame && !LostGame) {
-            int tempGrid[ILGIS][PLOTIS];
-            for (int i = 0; i < ILGIS; i++) {
-                for (int b = 0; b < PLOTIS; b++) {
-                    tempGrid[i][b] = Grid[i][b];
+    void Auto() { // make automatic movements
+        if (!wongame && !lostgame) {
+            int tempgrid[LENGTH][WIDTH]; // for storing initial tile values (before shifting)
+            for (int i = 0; i < LENGTH; i++) {
+                for (int b = 0; b < WIDTH; b++) {
+                    tempgrid[i][b] = grid[i][b];
                 }
             }
 
-            int minimumLangeliu = ILGIS * PLOTIS;
-            int minimumScore = 0;
-            int eiga[4] = {5,5,5,5};
-            bool reikiaSpecial = true;
+            int smallesttilecount = LENGTH * WIDTH; // stores the smallest tile count achieved by the currently best moveset
+            int largestscore = 0; // stores the largest score achieved by the currently best moveset
+            int moveset[4] = { 5,5,5,5 }; // for storing the best moveset
+            bool specialNeeded = true; // flag for if the AI will need to use a special ability
 
-            for (int w = 1; w < 4; w++) {
+            for (int w = 1; w < 4; w++) { // checks 4 moves into the future to find one moveset with the best outcome
                 for (int x = 0; x < 4; x++) {
                     for (int y = 0; y < 4; y++) {
                         for (int z = 0; z < 4; z++) {
 
-                            for (int i = 0; i < ILGIS; i++) {
-                                for (int b = 0; b < PLOTIS; b++) {
-                                    Grid[i][b] = tempGrid[i][b];
+                            for (int i = 0; i < LENGTH; i++) {
+                                for (int b = 0; b < WIDTH; b++) {
+                                    grid[i][b] = tempgrid[i][b];
                                 }
 
                             }
                             Shift(w); Shift(x); Shift(y); Shift(z);
-                            if (LaisvuLangeliuKiekis() < minimumLangeliu && minimumScore < Score()) {
-                                minimumScore = Score();
-                                minimumLangeliu = LaisvuLangeliuKiekis();
-                                eiga[0] = w; eiga[1] = x; eiga[2] = y; eiga[3] = z;
+                            if (OccupiedTiles() < smallesttilecount && largestscore < Score()) {
+                                largestscore = Score();
+                                smallesttilecount = OccupiedTiles();
+                                moveset[0] = w; moveset[1] = x; moveset[2] = y; moveset[3] = z;
                             }
-                            //std::cout << w << x << y << z << std::endl;
                         }
                     }
                 }
             }
-            for (int i = 0; i < ILGIS; i++) {
-                for (int b = 0; b < PLOTIS; b++) {
-                    if (Grid[i][b] != tempGrid[i][b]) {
-                        Grid[i][b] = tempGrid[i][b];
-                        reikiaSpecial = false;
+
+            for (int i = 0; i < LENGTH; i++) { // if the AI might be stuck
+                for (int b = 0; b < WIDTH; b++) {
+                    if (grid[i][b] != tempgrid[i][b]) {
+                        grid[i][b] = tempgrid[i][b];
+                        specialNeeded = false;
                     }
 
                 }
             }
 
-            for (int i = 99; i >= 0; i--) {
+            for (int i = 99; i >= 0; i--) { // moves the new moveset into the database of last 100 movesets
                 if (i != 0) {
                     for (int b = 0; b < 4; b++) {
-                        paskutinesEigos[i][b] = paskutinesEigos[i - 1][b];
+                        lastmoves[i][b] = lastmoves[i - 1][b];
                     }
                 }
                 else if (i == 0) {
                     for (int b = 0; b < 4; b++) {
-                        paskutinesEigos[i][b] = eiga[b];
+                        lastmoves[i][b] = moveset[b];
                     }
                 }
             }
 
-            bool nesikartoja10kartu = true;
-            for (int i = 0; i < 99 && nesikartoja10kartu; i++) {
+            bool last100isdifferent = true; // flag for checking if the last 100 movesets aren't identical
+            for (int i = 0; i < 99 && last100isdifferent; i++) {
                 for (int b = 0; b < 4; b++) {
-                    if (paskutinesEigos[i][b] != paskutinesEigos[i + 1][b])
-                        nesikartoja10kartu = false;
+                    if (lastmoves[i][b] != lastmoves[i + 1][b])
+                        last100isdifferent = false;
                 }
             }
-            
-            if (nesikartoja10kartu) {
-                LostGame = 1;
-                DimPng(OpacityDim);
-            } 
-            if (reikiaSpecial && SpecialCount > 0)
+
+            if (last100isdifferent) { //if the last 100 movesets are the same
+                if (specialcount > 0) // use special ability if there any left
+                    Special();
+                else { // if no special abilities left
+                    lostgame = 1;
+                    DimPng(opacitydim);
+                }
+                
+            }
+
+            if (specialNeeded && specialcount > 0) // if the AI thinks it needs to use a special ability
                 Special();
             else {
-                for (int i = 0; i < 4; i++) {
-                    Shift(eiga[i]);
+                for (int i = 0; i < 4; i++) { //applies the best moveset found
+                    Shift(moveset[i]);
                 }
             }
         }
-       
+
     }
 };
 
 int main()
 {
     srand(time(0));
-    sf::RenderWindow window(sf::VideoMode(((ILGIS*2+1) * IMG_SIZE), ((PLOTIS+1) * IMG_SIZE)), "2048 game", sf::Style::Close | sf::Style::Titlebar); // sukuriamas langas
+    sf::RenderWindow window(sf::VideoMode(((LENGTH*2+1) * IMG_SIZE), ((WIDTH+1) * IMG_SIZE)), "2048 game", sf::Style::Close | sf::Style::Titlebar); // creates the window
     window.setFramerateLimit(60);
-    sf::Image windowIcon;
-    windowIcon.loadFromFile("images/windowIcon.png");
-    window.setIcon(windowIcon.getSize().x, windowIcon.getSize().y, windowIcon.getPixelsPtr());
 
-    bool OptionSelect = false;
-    int Option = 0;
-    int fontsize = 36;
+    sf::Image windowIcon; windowIcon.loadFromFile("images/windowIcon.png"); window.setIcon(windowIcon.getSize().x, windowIcon.getSize().y, windowIcon.getPixelsPtr()); // sets the windows icon
+
+    bool optionselect = false; // for checking if an option has been selected from the menu
+    int option = 0; // which option is selected
+    int fontsize = 36; // font size used
 
     sf::Font font;
     if (!font.loadFromFile("fonts/slkscr.ttf")) {
@@ -550,265 +555,177 @@ int main()
    menu[0].setFillColor(sf::Color::Red); menu[1].setFillColor(sf::Color::White); menu[2].setFillColor(sf::Color::White);
    menu[0].setOrigin(menu[0].getGlobalBounds().width / 2.0, menu[0].getGlobalBounds().height / 2.0); menu[1].setOrigin(menu[1].getGlobalBounds().width / 2.0, menu[1].getGlobalBounds().height / 2.0); menu[2].setOrigin(menu[2].getGlobalBounds().width / 2.0, menu[2].getGlobalBounds().height / 2.0);
    menu[0].setPosition(window.getSize().x/2.0, window.getSize().y / 10 *2 ); menu[1].setPosition(window.getSize().x / 2.0, window.getSize().y / 10 * 5); menu[2].setPosition(window.getSize().x / 2.0, window.getSize().y / 10 * 8);
+   // /\ creates the menu text and applies the necessary parameters
 
-   //sf::Text testas;testas.setString("Avis"); testas.setFont(font); testas.setCharacterSize(fontsize); testas.setPosition((ILGIS + 1) * IMG_SIZE, PLOTIS*IMG_SIZE); testas.setFillColor(sf::Color::Red);
+   bool firstrender = true; // if the chosen game is rendered for the first time
 
-   bool FirstRender = true;
+   Player player1; Player player2; // player1 is on the left, player2 on the right
+   AI ai; AI ai2; // ai is on the right, ai2 is on the left
 
-   Player player1;
-   Player player2;
-   AI Ai;
-   AI Ai2;
-
-   player2.PushInput((ILGIS + 1) * IMG_SIZE);
-   Ai.PushInput((ILGIS + 1) * IMG_SIZE);
-
-   player1.RenderPng();
-   player2.RenderPng();
-   Ai.RenderPng();
-   Ai2.RenderPng();
+   player2.PushInput((LENGTH + 1) * IMG_SIZE); ai.PushInput((LENGTH + 1) * IMG_SIZE); // telling player2 and ai how much their tiles will have to be pushed to the right when drawn
+   player1.RenderPng();player2.RenderPng();ai.RenderPng();ai2.RenderPng(); // renders all the tile sprites for each class
 
     while (window.isOpen())
     {
-        sf::Event Press;
+        sf::Event press;
   
-        if (OptionSelect)
+        if (optionselect) // if an option is chosen
         {
-            if (Option == 0) {
-                if (FirstRender) {
-                    FirstRender = false;
-                    player1.Reset();
-                    Ai.Reset();
-
-                    player1.DimPng(255);
-                    Ai.DimPng(255);
-
+            if (option == 0) { // Player vs AI
+                if (firstrender) {
+                    firstrender = false;
+                    player1.Reset(); ai.Reset();
+                    player1.DimPng(255); ai.DimPng(255);
                     player1.NewTile(); player1.NewTile();
-                    Ai.NewTile(); Ai.NewTile();
+                    ai.NewTile(); ai.NewTile();
                 }
-                while (window.pollEvent(Press))
+                while (window.pollEvent(press))
                 {
-                    if (Press.type == sf::Event::KeyPressed)
+                    if (press.type == sf::Event::KeyPressed)
                     {
-                             if (Press.key.code == sf::Keyboard::A || Press.key.code == sf::Keyboard::Left)  { player1.Shift(2); Ai.Auto(); }
-                        else if (Press.key.code == sf::Keyboard::D || Press.key.code == sf::Keyboard::Right) { player1.Shift(3); Ai.Auto(); }
-                        else if (Press.key.code == sf::Keyboard::W || Press.key.code == sf::Keyboard::Up)  { player1.Shift(0); Ai.Auto(); }
-                        else if (Press.key.code == sf::Keyboard::S || Press.key.code == sf::Keyboard::Down) { player1.Shift(1); Ai.Auto(); }
-                        else if (Press.key.code == sf::Keyboard::X) { player1.Special(); }
-                        else if (Press.key.code == sf::Keyboard::R) {
-                            OptionSelect = false;
-                            Option = 0;
-                            FirstRender = 1;
+                             if (press.key.code == sf::Keyboard::A || press.key.code == sf::Keyboard::Left)  { player1.Shift(2); ai.Auto(); }
+                        else if (press.key.code == sf::Keyboard::D || press.key.code == sf::Keyboard::Right) { player1.Shift(3); ai.Auto(); }
+                        else if (press.key.code == sf::Keyboard::W || press.key.code == sf::Keyboard::Up)    { player1.Shift(0); ai.Auto(); }
+                        else if (press.key.code == sf::Keyboard::S || press.key.code == sf::Keyboard::Down)  { player1.Shift(1); ai.Auto(); }
+                        else if (press.key.code == sf::Keyboard::X) { player1.Special(); } // uses the special ability
+                        else if (press.key.code == sf::Keyboard::R) { // Goes back to the menu
+                            optionselect = false; option = 0; firstrender = 1;
                             menu[0].setFillColor(sf::Color::Red); menu[1].setFillColor(sf::Color::White); menu[2].setFillColor(sf::Color::White);
                         }
                     }
-                    else if (Press.type == sf::Event::Closed)
+                    else if (press.type == sf::Event::Closed)
                         window.close();
                 }
-                player1.Lose();
-                player1.Win();
-                Ai.Win();
-
-                window.clear();
-                player1.Draw(window, font, fontsize);
-                Ai.Draw(window, font, fontsize);
-                Divider(window, Ai.Lost());
-                window.display();
+                player1.Lose(); player1.Win(); ai.Win(); // checks if the player has won or lost and checks if the ai has won (the ai can check if it lost itself)
+                window.clear(); // the current screen is wiped
+                player1.Draw(window, font, fontsize); ai.Draw(window, font, fontsize); Divider(window, ai.ReturnLost()); // new screen is drawn
+                window.display(); // new screen is displayed
             }
-            else if (Option == 1) {
-                if (FirstRender) {
-                    FirstRender = false;
-                    player1.Reset();
-                    player2.Reset();
-
-                    player1.DimPng(255);
-                    player2.DimPng(255);
-
+            else if (option == 1) {
+                if (firstrender) {
+                    firstrender = false;
+                    player1.Reset(); player2.Reset();
+                    player1.DimPng(255); player2.DimPng(255);
                     player1.NewTile(); player1.NewTile();
                     player2.NewTile(); player2.NewTile();
                 }
-                while (window.pollEvent(Press))
+                while (window.pollEvent(press))
                 {
-                    if (Press.type == sf::Event::KeyPressed)
+                    if (press.type == sf::Event::KeyPressed)
                     {
-                        if (Press.key.code == sf::Keyboard::A)
-                            player1.Shift(2);
-                        else if (Press.key.code == sf::Keyboard::D)
-                            player1.Shift(3);
-                        else if (Press.key.code == sf::Keyboard::W)
-                            player1.Shift(0);
-                        else if (Press.key.code == sf::Keyboard::S)
-                            player1.Shift(1);
-                        else if (Press.key.code == sf::Keyboard::Left)
-                            player2.Shift(2);
-                        else if (Press.key.code == sf::Keyboard::Right)
-                            player2.Shift(3);
-                        else if (Press.key.code == sf::Keyboard::Up)
-                            player2.Shift(0);
-                        else if (Press.key.code == sf::Keyboard::Down)
-                            player2.Shift(1);
-                        else if (Press.key.code == sf::Keyboard::X)
-                            player1.Special();
-                        else if (Press.key.code == sf::Keyboard::M)
-                            player2.Special();
-                        else if (Press.key.code == sf::Keyboard::R) {
-                            OptionSelect = false;
-                            Option = 0;
-                            FirstRender = 1;
+                             if (press.key.code == sf::Keyboard::A) { player1.Shift(2); }
+                        else if (press.key.code == sf::Keyboard::D) { player1.Shift(3); }
+                        else if (press.key.code == sf::Keyboard::W) { player1.Shift(0); }
+                        else if (press.key.code == sf::Keyboard::S) { player1.Shift(1); }
+                        else if (press.key.code == sf::Keyboard::Left) { player2.Shift(2); }
+                        else if (press.key.code == sf::Keyboard::Right){ player2.Shift(3); }
+                        else if (press.key.code == sf::Keyboard::Up)   { player2.Shift(0); }
+                        else if (press.key.code == sf::Keyboard::Down) { player2.Shift(1); }
+                        else if (press.key.code == sf::Keyboard::X)    { player1.Special();}
+                        else if (press.key.code == sf::Keyboard::M)    { player2.Special(); }
+                        else if (press.key.code == sf::Keyboard::R) {
+                            optionselect = false; option = 0; firstrender = 1;
                             menu[0].setFillColor(sf::Color::Red); menu[1].setFillColor(sf::Color::White); menu[2].setFillColor(sf::Color::White);
                         }
                     }
-                    else if (Press.type == sf::Event::Closed)
+                    else if (press.type == sf::Event::Closed)
                         window.close();
                 }
-                player1.Lose();
-                player2.Lose();
-                player1.Win();
-                player2.Win();
-
-                window.clear();
-                player1.Draw(window, font, fontsize);
-                player2.Draw(window, font, fontsize);
-                Divider(window, player2.Lose());
-                window.display();
+                player1.Lose(); player2.Lose(); // checks if any of the players have lost
+                player1.Win(); player2.Win();   // checks if any of the players have won
+                window.clear(); // the current screen is wiped
+                player1.Draw(window, font, fontsize); player2.Draw(window, font, fontsize); Divider(window, player2.Lose()); // new screen is drawn
+                window.display(); // new screen is displayed
 
             }
-            else if (Option == 2) {
-                if (FirstRender) {
-                    FirstRender = false;
-                    Ai.Reset();
-                    Ai2.Reset();
-
-                    Ai.DimPng(255);
-                    Ai2.DimPng(255);
-
-                    Ai2.NewTile(); Ai2.NewTile(); Ai2.NewTile();
-                    Ai.NewTile(); Ai.NewTile();
+            else if (option == 2) {
+                if (firstrender) {
+                    firstrender = false;
+                    ai.Reset(); ai2.Reset();
+                    ai.DimPng(255); ai2.DimPng(255);
+                    ai.NewTile(); ai.NewTile();
+                    ai2.NewTile(); ai2.NewTile(); ai2.NewTile(); // an addition tile is added to ai2, so that it would solve the game in a diffrent way
                 }
-                while (window.pollEvent(Press))
+                while (window.pollEvent(press))
                 {
-                    if (Press.type == sf::Event::KeyPressed)
+                    if (press.type == sf::Event::KeyPressed)
                     {
-                        if (Press.key.code == sf::Keyboard::R) {
-                            OptionSelect = false;
-                            Option = 0;
-                            FirstRender = 1;
+                        if (press.key.code == sf::Keyboard::R) {
+                            optionselect = false; option = 0; firstrender = 1;
                             menu[0].setFillColor(sf::Color::Red); menu[1].setFillColor(sf::Color::White); menu[2].setFillColor(sf::Color::White);
                         }
                     }
-                    else if (Press.type == sf::Event::Closed)
+                    else if (press.type == sf::Event::Closed)
                         window.close();
                 }
-                Ai.Auto();
-                Ai2.Auto();
-                Ai.Win();
-                Ai2.Win();
+                ai.Auto(); ai2.Auto(); // lets the AI move
+                ai.Win(); ai2.Win();   // checks if one of them has won
 
-                window.clear();
-                Ai2.Draw(window, font, fontsize);
-                Ai.Draw(window, font, fontsize);
-                Divider(window, Ai.Lost());
-                window.display();
-            }
-            else if (Option == 4) {
-
-
-
-                if (FirstRender) {
-                    FirstRender = false;
-                    player1.NewTile(); player1.NewTile();
-                    Ai.NewTile(); Ai.NewTile();
-                }
-
-
-                while (window.pollEvent(Press))
-                {
-                    if (Press.type == sf::Event::KeyPressed)
-                    {
-                        if (Press.key.code == sf::Keyboard::Left || Press.key.code == sf::Keyboard::A)
-                            Ai.Auto();
-                        else if (Press.key.code == sf::Keyboard::Right || Press.key.code == sf::Keyboard::D)
-                            player1.Shift(3);
-                        else if (Press.key.code == sf::Keyboard::Up || Press.key.code == sf::Keyboard::W)
-                            player1.Shift(0);
-                        else if (Press.key.code == sf::Keyboard::Down || Press.key.code == sf::Keyboard::S)
-                            player1.Shift(1);
-                        else if (Press.key.code == sf::Keyboard::X)
-                            player1.Special();
-                    }
-                    else if (Press.type == sf::Event::Closed)
-                        window.close();
-                }
-
-                window.clear();
-                player1.Draw(window, font, fontsize);
-                Ai.Draw(window, font, fontsize);
-                Divider(window, 0);
-                window.display();
+                window.clear(); // the current screen is wiped
+                ai2.Draw(window, font, fontsize); ai.Draw(window, font, fontsize); Divider(window, ai.ReturnLost()); // new screen is drawn
+                window.display(); // new screen is displayed
             }
             
         }
         else {
             
             window.clear();
+
             sf::Texture iblanko;
-            iblanko.loadFromFile("images/blankopace.png");
+            iblanko.loadFromFile("images/blankopace.png"); //used for the menu screen tiles
             sf::Sprite sblanko;
             sblanko.setTexture(iblanko);
-            for (int i = 0; i < (ILGIS*2+1); i++) {
-                for (int b = 0; b < PLOTIS+1; b++) {
+
+            for (int i = 0; i < (LENGTH*2+1); i++) { // puts the tiles all over the screen
+                for (int b = 0; b < WIDTH+1; b++) {
                     sblanko.setPosition((i * IMG_SIZE), b * IMG_SIZE);
                     window.draw(sblanko);
                 }
             }
-            window.draw(menu[0]);
-            window.draw(menu[1]);
-            window.draw(menu[2]);
+            window.draw(menu[0]); window.draw(menu[1]); window.draw(menu[2]); // draws the menu text
             window.display();
-            while (window.pollEvent(Press))
+            while (window.pollEvent(press))
             {
-                if (Press.type == sf::Event::KeyPressed)
+                if (press.type == sf::Event::KeyPressed)
                 {
-                    if ((Press.key.code == sf::Keyboard::Down || Press.key.code == sf::Keyboard::S) && Option != 2) {
-                        Option++;
+                    if ((press.key.code == sf::Keyboard::Down || press.key.code == sf::Keyboard::S) && option != 2) { // moves the selection down
+                        option++;
                         for (int i = 0; i < 3; i++) {
-                            if (i == Option)
+                            if (i == option)
                                 menu[i].setFillColor(sf::Color::Red);
                             else
                                 menu[i].setFillColor(sf::Color::White);
                         }
                     }
-                    else if ((Press.key.code == sf::Keyboard::Up || Press.key.code == sf::Keyboard::W) && Option != 0) {
-                        Option--;
+                    else if ((press.key.code == sf::Keyboard::Up || press.key.code == sf::Keyboard::W) && option != 0) { // moves the selection up
+                        option--;
                         for (int i = 0; i < 3; i++) {
-                            if (i == Option)
+                            if (i == option)
                                 menu[i].setFillColor(sf::Color::Red);
                             else
                                 menu[i].setFillColor(sf::Color::White);
                         }
                         
                     }
-                    else if (Press.key.code == sf::Keyboard::Enter) {
-                        OptionSelect = true;
-                        if (Option != 1 && Option != 0 && Option != 2)
-                            Option = 4;
+                    else if (press.key.code == sf::Keyboard::Enter) { // selects the highlighted option
+                        optionselect = true;
+                        if (option != 1 && option != 0 && option != 2)
+                            option = 4;
                     }
 
                     window.clear();
-                    for (int i = 0; i < (ILGIS * 2 + 1); i++) {
-                        for (int b = 0; b < PLOTIS+1; b++) {
+                    for (int i = 0; i < (LENGTH * 2 + 1); i++) {
+                        for (int b = 0; b < WIDTH+1; b++) {
                             sblanko.setPosition((i * IMG_SIZE), b * IMG_SIZE);
                             window.draw(sblanko);
                         }
                     }
-                    window.draw(menu[0]);
-                    window.draw(menu[1]);
-                    window.draw(menu[2]);
+                    window.draw(menu[0]); window.draw(menu[1]); window.draw(menu[2]);
                     window.display();
                     
                         
                 }
-                else if (Press.type == sf::Event::Closed)
+                else if (press.type == sf::Event::Closed)
                     window.close();
             }
             

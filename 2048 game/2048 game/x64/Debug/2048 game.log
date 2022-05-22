@@ -1,1 +1,58 @@
-﻿  2048 game.vcxproj -> C:\Users\Gytis\source\repos\2048 game\x64\Debug\2048 game.exe
+﻿  Source.cpp
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(22,51): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(89,19): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(349,59): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(349,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(353,59): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(353,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(357,59): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(357,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(361,59): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(361,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(365,60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(365,51): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(369,60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(369,51): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(373,60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(373,51): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(377,61): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(377,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(381,61): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(381,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(385,61): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(385,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(389,62): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(389,53): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(393,62): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(393,53): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(421,166): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(537,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(558,94): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(558,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(558,192): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(558,152): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(558,290): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(558,250): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(559,72): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(559,42): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(559,148): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(559,117): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(559,224): warning C4244: 'argument': conversion from 'T' to 'float', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(559,193): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(767,59): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(767,44): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(807,67): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Gytis\source\repos\2048 game\2048 game\Source.cpp(807,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  2048 game.vcxproj -> C:\Users\Gytis\source\repos\2048 game\x64\Debug\2048 game.exe
